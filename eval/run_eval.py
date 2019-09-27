@@ -25,7 +25,7 @@ def format_bioasq2treceval_qret(bioasq_data, system_name, filename):
 
 def trec_evaluate(qrels_file, qret_file):
 	trec_eval_res = subprocess.Popen(
-		[os.path.dirname(os.path.realpath(__file__)) + '/./trec_eval', '-m', 'all_trec', qrels_file, qret_file],
+		[os.path.dirname(os.path.realpath(__file__)) + '/trec_eval', '-m', 'all_trec', qrels_file, qret_file],
 		stdout=subprocess.PIPE, shell=False)
 
 	(out, err) = trec_eval_res.communicate()
