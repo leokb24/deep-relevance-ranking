@@ -31,6 +31,13 @@ UNK_TOKEN = '*UNK*'
 SEED = 1234
 random.seed(SEED)
 
+import keras.backend.tensorflow_backend as KTF
+
+g_config = tf.ConfigProto()
+g_config.gpu_options.allow_growth = True
+session = tf.Session(config=g_config)
+KTF.set_session(session)
+
 def map_term2ind(w2v_path):
     word_vectors = KeyedVectors.load_word2vec_format(w2v_path, binary=True)
     vocabulary = sorted(list(word_vectors.vocab.keys()))
@@ -42,6 +49,7 @@ def map_term2ind(w2v_path):
 
     return term2ind
 
+
 def get_idf_list(tokens, idf_dict, max_idf):
     idf_list = []
     for t in tokens:
@@ -51,6 +59,7 @@ def get_idf_list(tokens, idf_dict, max_idf):
             idf_list.append(max_idf)
 
     return idf_list
+
 
 def get_overlap_features(q_tokens, d_tokens, q_idf):
     # Map term to idf before set() change the term order
@@ -95,6 +104,7 @@ def get_overlap_features(q_tokens, d_tokens, q_idf):
         bigram_overlap = 0
 
     return [unigram_overlap, bigram_overlap, idf_uni_overlap]
+
 
 def produce_pos_neg_pairs(data, docset, idf_dict, term2ind, model_params, query_preprocessing, doc_preprocessing):
     pairs_list = []
@@ -192,6 +202,7 @@ def produce_pos_neg_pairs(data, docset, idf_dict, term2ind, model_params, query_
 
     return pairs_data
 
+
 def produce_reranking_inputs(data, docset, idf_dict, term2ind, model_params, query_preprocessing, doc_preprocessing):
     query_data_list = []
 
@@ -236,6 +247,7 @@ def produce_reranking_inputs(data, docset, idf_dict, term2ind, model_params, que
 
     return query_data_list
 
+
 def log(data, retr_dir, filename, cl=False):
     f = open(retr_dir + '/{0}'.format(filename), 'a')
     f.write(data + '\n')
@@ -243,13 +255,16 @@ def log(data, retr_dir, filename, cl=False):
         f.write('\n')
     f.close()
 
+
 def results_to_string(prefix, metrics, results):
     new_str = '\t'.join(['{0} {1}: {2}'.format(prefix, m, results[m]) for m in metrics])
     return new_str
 
+
 def myprint(s):
     with open('log_{0}.txt'.format(params_file.split('/')[-1], 'w')) as f:
         print(s, file=f)
+
 
 def write_trec_eval_results(q_id, sorted_retr_scores, retr_dir, filename):
     path = '{0}/{1}'.format(retr_dir, filename)
@@ -261,6 +276,7 @@ def write_trec_eval_results(q_id, sorted_retr_scores, retr_dir, filename):
     file.close()
     return path
 
+
 def shuffle_train_pairs(train_data_dict):
     num_pairs = train_data_dict['num_pairs']
     inds = np.arange(num_pairs)
@@ -270,11 +286,13 @@ def shuffle_train_pairs(train_data_dict):
             train_data_dict[k] = np.array(train_data_dict[k])[inds]
     return train_data_dict
 
+
 def write_bioasq_results_dict(bioasq_res_dict, retr_dir, filename):
     path = '{0}/{1}'.format(retr_dir, filename.replace('dev_', 'dev_bioasq_'))
     with open(path, 'w') as f:
         json.dump(bioasq_res_dict, f, indent=2)
     return path
+
 
 def trec_eval_custom(q_rels_file, metrics, path):
     eval_res = subprocess.Popen(
@@ -303,6 +321,7 @@ def trec_eval_custom(q_rels_file, metrics, path):
     file.close()
     return results
 
+
 def get_precision_at_k(res_dict, qrels, k):
     custom_metrics = {}
 
@@ -312,6 +331,7 @@ def get_precision_at_k(res_dict, qrels, k):
         sum_prec_at_k += hits / k
     return sum_prec_at_k / len(res_dict['questions'])
 
+
 def load_qrels(path):
     with open(path, 'r') as f:
         data = json.load(f)
@@ -320,6 +340,7 @@ def load_qrels(path):
     for q in data['questions']:
         qrels[q['id']] = set(q['documents'])
     return qrels
+
 
 def load_embeddings(path, term2ind):
     word2vec = gensim.models.KeyedVectors.load_word2vec_format(path, binary=True)
@@ -347,6 +368,7 @@ def load_embeddings(path, term2ind):
     print("No of OOV tokens: %d" % rand_count)
     return embedding
 
+
 def rerank_query_generator(filename):
     with open(filename, 'rb') as f:
         unpickler = pickle.Unpickler(f)
@@ -358,6 +380,7 @@ def rerank_query_generator(filename):
                 q = None
             except EOFError:
                 break
+
 
 def rerank(queries_to_rerank, filename, scoring_model, qrels_file, model_params, metrics, retr_dir, doc_id_prefix):
     res_dict = {'questions': []}
@@ -394,6 +417,7 @@ def rerank(queries_to_rerank, filename, scoring_model, qrels_file, model_params,
                         'ndcg_cut_20': trec_eval_metrics['ndcg_cut_20']}
 
     return reported_results
+
 
 def pacrr_train(train_pairs, dev_pairs, queries_to_rerank, term2ind, config, model_params, metrics, retr_dir,
                 doc_id_prefix=''):
@@ -500,6 +524,7 @@ def pacrr_train(train_pairs, dev_pairs, queries_to_rerank, term2ind, config, mod
                        shuffle=True)
 
     return scoring_model, eval.best_map_weights_path, eval.best_epoch
+
 
 def pacrr_predict(scoring_model, weights_path, best_epoch, queries_to_rerank, term2ind, config, model_params, metrics,
                   retr_dir, doc_id_prefix=''):

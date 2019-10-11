@@ -28,15 +28,15 @@ from utils.pacrr_utils import pacrr_train, pacrr_predict, map_term2ind, produce_
 from utils.bioasq_utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-config', dest='config_file')
-parser.add_argument('-params', dest='params_file')
+parser.add_argument('-config', dest='config_file', default="./config/config_bioasq.json")
+parser.add_argument('-params', dest='params_file', default="./model_params/pacrr_bioasq.json")
 parser.add_argument('-log', dest='log_name', default='run')
 args = parser.parse_args()
 
-# config_file = args.config_file
-# params_file = args.params_file
-config_file = "config/config_bioasq.json"
-params_file = "model_params/pacrr_bioasq.json"
+config_file = args.config_file
+params_file = args.params_file
+# config_file = "config/config_bioasq.json"
+# params_file = "model_params/pacrr_bioasq.json"
 
 with open(config_file, 'r') as f:
     config = json.load(f)
@@ -81,7 +81,7 @@ with open(idf_path, 'rb') as f:
     idf = pickle.load(f)
 
 print('All data loaded. Pairs generation started..')
-with open("./pickle_data/term2ind.pkl", "rb") as f:
+with open("./pickle_data/bioasq/term2ind.pkl", "rb") as f:
     term2ind = pickle.load(f)
 
 '''
@@ -125,26 +125,27 @@ with open("./pickle_data/test_reranking_data.pkl", "wb") as f:
 
 # Produce Pos/Neg pairs for the training subset of queries.
 print('Producing Pos-Neg pairs for training data..')
-with open("./pickle_data/train_pairs.pkl", "rb") as f:
+with open("./pickle_data/bioasq/train_pairs.pkl", "rb") as f:
     train_pairs = pickle.load(f)
 
 # Produce Pos/Neg pairs for the development subset of queries.
 print('Producing Pos-Neg pairs for dev data..')
 # dev_pairs = produce_pos_neg_pairs(data_dev, docset_dev, idf, term2ind, model_params, q_preproc_bioasq, d_preproc_bioasq)
-with open("./pickle_data/dev_pairs.pkl", "rb") as f:
+with open("./pickle_data/bioasq/dev_pairs.pkl", "rb") as f:
     dev_pairs = pickle.load(f)
 
 # Produce Pos/Neg pairs for the test subset of queries.
 print('Producing Pos-Neg pairs for test data..')
-with open("./pickle_data/test_pairs.pkl", "rb") as f:
+with open("./pickle_data/bioasq/test_pairs.pkl", "rb") as f:
     test_pairs = pickle.load(f)
+
 # Produce reranking inputs for the development subset of queries.
 print('Producing reranking data for dev..')
-with open("./pickle_data/dev_reranking_data.pkl", "rb") as f:
+with open("./pickle_data/bioasq/dev_reranking_data.pkl", "rb") as f:
     dev_reranking_data = pickle.load(f)
 # Produce reranking inputs for the test subset of queries.
 print('Producing reranking data for test..')
-with open("./pickle_data/test_reranking_data.pkl", "rb") as f:
+with open("./pickle_data/bioasq/test_reranking_data.pkl", "rb") as f:
     test_reranking_data = pickle.load(f)
 
 
